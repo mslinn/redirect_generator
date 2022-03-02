@@ -1,8 +1,11 @@
 "use strict";
+// TODO extract from _config.yml
+// permalink: /blog/:year/:month/:day/:title:output_ext
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+const process_1 = require("process");
 const vscode = require("vscode");
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -17,6 +20,7 @@ function activate(context) {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
         vscode.window.showInformationMessage('Add a redirect from redirect_generator');
+        const config = loadJekyllConfig();
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const fileNameRelative = relativeFileName(editor);
@@ -57,6 +61,19 @@ function insertRedirect(lines, fileNameRelative, editor) {
         const position = new vscode.Position(lastRedirectIndex, 0);
         editBuilder.insert(position, `${newText}\n`);
     });
+}
+function loadJekyllConfig() {
+    const yaml = require('js-yaml');
+    const fs = require('fs');
+    try {
+        const doc = yaml.load(fs.readFileSync(documentWorkspaceFolder() + '/_config.yml', 'utf8'));
+        const collectionsDir = doc.collections_dir;
+        console.log(doc);
+    }
+    catch (e) {
+        console.log(e);
+        (0, process_1.exit)(1);
+    }
 }
 function relativeFileName(editor) {
     const fileName = editor.document.fileName;

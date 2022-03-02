@@ -21,6 +21,7 @@
     ]
   },
 	"dependencies": {
+    "js-yaml": "4.1.0"
   },
   "description": "Injects the URL of a redirect page into Jekyll front matter",
   "devDependencies": {

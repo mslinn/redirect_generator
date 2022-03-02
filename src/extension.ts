@@ -1,5 +1,9 @@
+// TODO extract from _config.yml
+// permalink: /blog/:year/:month/:day/:title:output_ext
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { exit } from 'process';
 import * as vscode from 'vscode';
 
 // this method is called when your extension is activated
@@ -16,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Add a redirect from redirect_generator');
+		const config = loadJekyllConfig();
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
 			const fileNameRelative = relativeFileName(editor);
@@ -56,6 +61,20 @@ function insertRedirect(lines: string[], fileNameRelative: string, editor: vscod
 		const position = new vscode.Position(lastRedirectIndex, 0);
 		editBuilder.insert(position, `${newText}\n`);
 	});
+}
+
+function loadJekyllConfig() {
+	const yaml = require('js-yaml');
+	const fs   = require('fs');
+
+	try {
+		const doc = yaml.load(fs.readFileSync(documentWorkspaceFolder() + '/_config.yml', 'utf8'));
+		const collectionsDir: string = doc.collections_dir;
+		console.log(doc);
+	} catch (e) {
+		console.log(e);
+		exit(1);
+	}
 }
 
 function relativeFileName(editor: vscode.TextEditor) {

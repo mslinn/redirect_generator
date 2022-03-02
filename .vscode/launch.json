@@ -10,8 +10,8 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"//,
-				//"--extensionTestsPath=/mnt/f/work/ancientWarmth/"
+				"--extensionDevelopmentPath=/var/sitesUbuntu/www.mslinn.com",
+				"--extensionTestsPath=/var/sitesUbuntu/www.mslinn.com"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
