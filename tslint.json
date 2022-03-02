@@ -1,0 +1,9 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "trailing-comma": true,
+    "no-empty": false,
+    "arrow-parens": false
+  },
+  "defaultSeverity": "warning"
+}
