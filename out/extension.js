@@ -4,21 +4,6 @@ exports.deactivate = exports.activate = void 0;
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
-function documentWorkspaceFolder() {
-    const fileName = vscode.window.activeTextEditor?.document.fileName;
-    return vscode.workspace.workspaceFolders
-        ?.map((folder) => folder.uri.fsPath)
-        .filter((fsPath) => fileName?.startsWith(fsPath))[0];
-}
-function relativeFileName(editor) {
-    const fileName = editor.document.fileName;
-    const workspaceFolder = documentWorkspaceFolder();
-    let workspaceLen = 0;
-    if (workspaceFolder) {
-        workspaceLen = workspaceFolder.length;
-    }
-    return fileName.substring(workspaceLen);
-}
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -36,49 +21,70 @@ function activate(context) {
         if (editor) {
             const fileNameRelative = relativeFileName(editor);
             const text = editor.document.getText();
-            const eol = editor.document.eol;
             console.log(`Examining ${fileNameRelative}`);
             let lines = text.split("\n");
             if (lines.length > 1 && lines[0].startsWith("---")) {
-                let linesCopy = Array.from(lines);
-                linesCopy.shift();
-                const frontMatterEnd = linesCopy.findIndex(x => x.startsWith('---'));
-                let redirectEntryIndex = -1;
-                let lastRedirectIndex = -1;
-                if (frontMatterEnd >= 0) {
-                    console.log("Jekyll front matter is:");
-                    for (var _i = 0; _i < frontMatterEnd; _i++) {
-                        // var num = linesCopy[_i];
-                        console.log(`  ${linesCopy[_i]}`);
-                        if (linesCopy[_i].startsWith('redirect_from:')) {
-                            redirectEntryIndex = lastRedirectIndex = _i;
-                        }
-                        else if (redirectEntryIndex >= 0 && linesCopy[_i].startsWith('  - ')) {
-                            lastRedirectIndex = _i;
-                        }
-                    }
-                    let newText = "";
-                    if (lastRedirectIndex < 0) {
-                        lastRedirectIndex = 1;
-                        newText = `redirect_from:\n  - ${fileNameRelative}`;
-                    }
-                    else {
-                        newText = `  - ${fileNameRelative}`;
-                    }
-                    editor.edit(editBuilder => {
-                        const position = new vscode.Position(lastRedirectIndex, 0);
-                        editBuilder.insert(position, `${newText}\n`);
-                    });
-                }
-                else {
-                    console.log("No front matter was found in the currently edited file.");
-                }
+                insertRedirect(lines, fileNameRelative, editor);
+            }
+            else {
+                console.log("No front matter was found in the currently edited file.");
             }
         }
     });
     context.subscriptions.push(disposable);
 }
 exports.activate = activate;
+function documentWorkspaceFolder() {
+    const fileName = vscode.window.activeTextEditor?.document.fileName;
+    return vscode.workspace.workspaceFolders
+        ?.map((folder) => folder.uri.fsPath)
+        .filter((fsPath) => fileName?.startsWith(fsPath))[0];
+}
+function insertRedirect(lines, fileNameRelative, editor) {
+    let linesCopy = Array.from(lines);
+    linesCopy.shift();
+    const frontMatterEnd = linesCopy.findIndex(x => x.startsWith('---'));
+    let lastRedirectIndex = scanForRedirect(frontMatterEnd, linesCopy);
+    let newText = "";
+    if (lastRedirectIndex < 0) {
+        lastRedirectIndex = 1;
+        newText = `redirect_from:\n  - ${fileNameRelative}`;
+    }
+    else {
+        newText = `  - ${fileNameRelative}`;
+    }
+    editor.edit(editBuilder => {
+        const position = new vscode.Position(lastRedirectIndex, 0);
+        editBuilder.insert(position, `${newText}\n`);
+    });
+}
+function relativeFileName(editor) {
+    const fileName = editor.document.fileName;
+    const workspaceFolder = documentWorkspaceFolder();
+    let workspaceLen = 0;
+    if (workspaceFolder) {
+        workspaceLen = workspaceFolder.length;
+    }
+    return fileName.substring(workspaceLen);
+}
+function scanForRedirect(frontMatterEnd, linesCopy) {
+    let lastRedirectIndex = -1;
+    let redirectEntryIndex = -1;
+    if (frontMatterEnd >= 0) {
+        console.log("Jekyll front matter is:");
+        for (var _i = 0; _i < frontMatterEnd; _i++) {
+            // var num = linesCopy[_i];
+            console.log(`  ${linesCopy[_i]}`);
+            if (linesCopy[_i].startsWith('redirect_from:')) {
+                redirectEntryIndex = lastRedirectIndex = _i;
+            }
+            else if (redirectEntryIndex >= 0 && linesCopy[_i].startsWith('  - ')) {
+                lastRedirectIndex = _i;
+            }
+        }
+    }
+    return lastRedirectIndex;
+}
 // this method is called when your extension is deactivated
 function deactivate() { }
 exports.deactivate = deactivate;

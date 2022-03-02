@@ -1,6 +1,6 @@
-# redirect-generator README
+# redirect-generator
 
-This is the README for your extension "redirect-generator". After writing up a brief description, we recommend including the following sections.
+Injects the URL of a redirect page into [Jekyll](http://jekyllrb.com/) [front matter](https://jekyllrb.com/docs/front-matter/).
 
 ## Features
 
