@@ -1,8 +1,6 @@
 {
   "activationEvents": [
-    "onCommand:redirect-generator.redirectHttp",
-		"onLanguage:html",
-		"*"
+    "onCommand:redirect-generator.redirectHttp"
   ],
   "categories": [
     "Other"
@@ -42,7 +40,7 @@
   "engines": {
     "vscode": "^1.64.0"
   },
-	"license": "A2",
+	"license": "Apache-2.0",
   "main": "./out/extension.js",
   "name": "redirect-generator",
 	"repository": {
