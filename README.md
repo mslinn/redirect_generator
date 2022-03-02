@@ -1,6 +1,8 @@
 # redirect-generator
 
-Injects the URL of a redirect page into [Jekyll](http://jekyllrb.com/) [front matter](https://jekyllrb.com/docs/front-matter/).
+Visual Studio Code Extension that injects the URL of a redirect page into 
+[Jekyll](http://jekyllrb.com/) [front matter](https://jekyllrb.com/docs/front-matter/).
+
 
 ## Features
 
