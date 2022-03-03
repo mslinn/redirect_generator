@@ -5,9 +5,12 @@ import * as vscode from 'vscode';
 
 export default class Redirect {
   private editor: vscode.TextEditor;
+  private eol: string;
 
   constructor(editor: vscode.TextEditor) {
+    const os = require("os");
     this.editor = editor;
+    this.eol = os.EOL;
   }
 
   public loadJekyllConfig(): void {
@@ -30,7 +33,7 @@ export default class Redirect {
     const fileNameRelative = this.relativeFileName();
     const text = this.editor.document.getText();
     console.log(`Examining ${fileNameRelative}`);
-    let lines = text.split("\n");
+    let lines = text.split(this.eol);
     if (lines.length>1 && lines[0].startsWith("---")) {
       this.logFrontMatter(lines);
       this.insertRedirect(lines, fileNameRelative);
@@ -76,10 +79,9 @@ export default class Redirect {
         const nextLineNumber: number = this.nextRedirectIndex(linesCopy, frontMatterEnd);
         let position = new vscode.Position(nextLineNumber, 0);
         if (!this.redirectKeyPresent(linesCopy, frontMatterEnd, fileNameRelative)) {
-          editBuilder.insert(position, 'redirect_from:\n');
-          //position = new vscode.Position(nextLineNumber+1, 0);
+          editBuilder.insert(position, 'redirect_from:' + this.eol);
         }
-        editBuilder.insert(position, `${newText}\n`);
+        editBuilder.insert(position, `${newText}${this.eol}`);
       });
     }
   }
