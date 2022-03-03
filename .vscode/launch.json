@@ -11,7 +11,7 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"/mnt/f/work/jekyll/redirect-test"
+				"${env:jekyll}/redirect-test"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"

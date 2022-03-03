@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { FrontMatter } from './FrontMatter';
+import { FrontMatter } from './frontMatter';
 import { JekyllConfig } from './jekyllConfig';
 
 export default class Redirect extends FrontMatter {
