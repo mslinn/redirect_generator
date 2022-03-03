@@ -2,30 +2,21 @@ import { exit } from 'process';
 import * as vscode from 'vscode';
 
 // permalink: /blog/:year/:month/:day/:title:output_ext
+interface JekyllConfig {
+  hasCollectionsDir: boolean,
+  collectionsDir: string
+}
 
 export default class Redirect {
   private editor: vscode.TextEditor;
   private eol: string;
+  private jekyllConfig: JekyllConfig;
 
   constructor(editor: vscode.TextEditor) {
     const os = require("os");
     this.editor = editor;
     this.eol = os.EOL;
-  }
-
-  public loadJekyllConfig(): void {
-    const yaml = require('js-yaml');
-    const fs   = require('fs');
-
-    try {
-      const fqConfigName = this.documentWorkspaceFolder() + '/_config.yml';
-      const doc = yaml.safeLoad(fs.readFileSync(fqConfigName, 'utf8'));
-      const collectionsDir: string = doc.collections_dir;
-      console.log(doc);
-    } catch (e) {
-      console.log(e);
-      exit(1);
-    }
+    this.jekyllConfig = this.loadJekyllConfig();
   }
 
   public process(): void {
@@ -83,6 +74,29 @@ export default class Redirect {
         }
         editBuilder.insert(position, `${newText}${this.eol}`);
       });
+    }
+  }
+
+  private loadJekyllConfig(): JekyllConfig {
+    const yaml = require('js-yaml');
+    const fs   = require('fs');
+
+    const config: JekyllConfig = Object.assign({});
+    try {
+      const fqConfigName = this.documentWorkspaceFolder() + '/_config.yml';
+      const doc = yaml.load(fs.readFileSync(fqConfigName, 'utf8'));
+      console.log(doc);
+      config.hasCollectionsDir = doc.hasOwnProperty('collections_dir');
+      if (config.hasCollectionsDir) {
+        console.log("TODO: Figure out how to construct filename for collections_dir");
+        config.collectionsDir = doc.collections_dir;
+      } else {
+        console.log("TODO: Figure out how to construct filename without collections_dir");
+      }
+      return config;
+    } catch (e) {
+      console.log(e);
+      exit(1);
     }
   }
 
