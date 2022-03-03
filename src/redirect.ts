@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { FrontMatter } from './FrontMatter';
 import { JekyllConfig } from './jekyllConfig';
 
-// permalink: /blog/:year/:month/:day/:title:output_ext
 export default class Redirect extends FrontMatter {
   private jekyllConfig: JekyllConfig;
 

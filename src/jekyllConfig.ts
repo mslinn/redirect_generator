@@ -1,5 +1,7 @@
 import { exit } from 'process';
 
+// permalink: /blog/:year/:month/:day/:title:output_ext
+
 export class JekyllConfig {
   public hasCollectionsDir: boolean;
   public collectionsDir: string;
