@@ -3,7 +3,8 @@
   "rules": {
     "trailing-comma": true,
     "no-empty": false,
-    "arrow-parens": false
+    "arrow-parens": false,
+    "no-console": false
   },
   "defaultSeverity": "warning"
 }

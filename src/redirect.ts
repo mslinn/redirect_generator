@@ -14,7 +14,7 @@ export default class Redirect extends FrontMatter {
     const fileNameRelative = this.relativeFileName();
     const text = this.editor.document.getText();
     console.log(`Examining ${fileNameRelative}`);
-    let lines = text.split(this.eol);
+    const lines = text.split(this.eol);
     if (lines.length>1 && lines[0].startsWith("---")) {
       this.logFrontMatter(lines);
       super.insertRedirect(lines, fileNameRelative);
