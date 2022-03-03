@@ -1,23 +1,17 @@
-import { exit } from 'process';
 import * as vscode from 'vscode';
 import { FrontMatter } from './FrontMatter';
+import { JekyllConfig } from './jekyllConfig';
 
 // permalink: /blog/:year/:month/:day/:title:output_ext
-export interface JekyllConfig {
-  hasCollectionsDir: boolean,
-  collectionsDir: string
-}
-
 export default class Redirect extends FrontMatter {
   private jekyllConfig: JekyllConfig;
 
   constructor(editor: vscode.TextEditor) {
     super(editor);
-    this.jekyllConfig = this.loadJekyllConfig();
+    this.jekyllConfig = new JekyllConfig(this.documentWorkspaceFolder());
   }
 
   public process(): void {
-    // const config = this.loadJekyllConfig();
     const fileNameRelative = this.relativeFileName();
     const text = this.editor.document.getText();
     console.log(`Examining ${fileNameRelative}`);
@@ -31,29 +25,6 @@ export default class Redirect extends FrontMatter {
         'See https://jekyllrb.com/docs/front-matter/',
         { modal: true }
       );
-    }
-  }
-
-  private loadJekyllConfig(): JekyllConfig {
-    const yaml = require('js-yaml');
-    const fs   = require('fs');
-
-    const config: JekyllConfig = Object.assign({});
-    try {
-      const fqConfigName = this.documentWorkspaceFolder() + '/_config.yml';
-      const doc = yaml.load(fs.readFileSync(fqConfigName, 'utf8'));
-      console.log(doc);
-      config.hasCollectionsDir = doc.hasOwnProperty('collections_dir');
-      if (config.hasCollectionsDir) {
-        console.log("TODO: Figure out how to construct filename for collections_dir");
-        config.collectionsDir = doc.collections_dir;
-      } else {
-        console.log("TODO: Figure out how to construct filename without collections_dir");
-      }
-      return config;
-    } catch (e) {
-      console.log(e);
-      exit(1);
     }
   }
 
