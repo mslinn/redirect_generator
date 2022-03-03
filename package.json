@@ -10,7 +10,7 @@
     "commands": [
       {
         "command": "redirect-generator.redirectHttp",
-        "title": "Adding a HTTP Redirect"
+        "title": "Add an HTTP Redirect"
       }
     ],
 		"keybindings": [

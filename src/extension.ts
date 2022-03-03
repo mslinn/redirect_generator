@@ -13,11 +13,17 @@ export function activate(context: vscode.ExtensionContext) {
 	// The commandId parameter must match the command field in package.json
 	let disposable = vscode.commands.registerCommand('redirect-generator.redirectHttp', () => {
 		// This code is executed every time the command is executed
-		vscode.window.showInformationMessage('Add a redirect from redirect_generator');
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-			const redirect = new Redirect(editor);
-			redirect.process();
+			vscode.window.showInformationMessage(
+				"redirect_generator is adding an HTTP redirect into this page's Jekyll front matter."
+			);
+			new Redirect(editor).process();
+		} else {
+			vscode.window.showInformationMessage(
+				"Please select an editor window containing a Jekyll website's HTML" +
+				" page so redirect_generator can insert an HTTP redirect into the Jekyll front matter."
+			);
 		}
 	});
 
