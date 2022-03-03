@@ -1,6 +1,7 @@
 {
   "activationEvents": [
-    "onCommand:redirect-generator.redirectHttp"
+    "onCommand:redirect-generator.redirectHttp",
+    "*"
   ],
   "categories": [
     "Other"

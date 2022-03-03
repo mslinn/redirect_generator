@@ -10,8 +10,8 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=/var/sitesUbuntu/www.mslinn.com",
-				"--extensionTestsPath=/var/sitesUbuntu/www.mslinn.com"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"/mnt/f/work/jekyll/redirect-test"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
