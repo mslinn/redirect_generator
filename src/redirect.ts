@@ -37,16 +37,6 @@ export default class Redirect {
     }
   }
 
-  public relativeFileName(): string {
-    const fileName = this.editor.document.fileName;
-    const workspaceFolder = this.documentWorkspaceFolder();
-    let workspaceLen = 0;
-    if (workspaceFolder) {
-      workspaceLen = workspaceFolder.length;
-    }
-    return fileName.substring(workspaceLen);
-  }
-
 
   private documentWorkspaceFolder(): string | undefined {
     const fileName = vscode.window.activeTextEditor?.document.fileName;
@@ -60,7 +50,7 @@ export default class Redirect {
     linesCopy.shift();
     const newText = `  - ${fileNameRelative}`;
     const frontMatterEnd: number = linesCopy.findIndex(x => x.startsWith('---'));
-    if (this.redirectAlreadyPresent(linesCopy, frontMatterEnd, fileNameRelative)) {
+    if (this.redirectValuePresent(linesCopy, frontMatterEnd, fileNameRelative)) {
       vscode.window.showInformationMessage(
         `${fileNameRelative} is already present in the list of redirect_from items`,
         { modal: true }
@@ -139,7 +129,14 @@ export default class Redirect {
     }
   }
 
-  private redirectAlreadyPresent(lines: string[], frontMatterEnd: number, fileNameRelative: string): boolean {
+  private redirectKeyPresent(lines: string[], frontMatterEnd: number, fileNameRelative: string): boolean {
+    const redirectLine: number = lines
+                                  .slice(0, frontMatterEnd)
+                                  .findIndex( (line) => line.startsWith('redirect_from:'));
+    return redirectLine > -1;
+  }
+
+  private redirectValuePresent(lines: string[], frontMatterEnd: number, fileNameRelative: string): boolean {
     const redirectLine: number = lines
                                   .slice(0, frontMatterEnd)
                                   .findIndex( (line) => line.startsWith('redirect_from:'));
@@ -158,44 +155,13 @@ export default class Redirect {
     return false;
   }
 
-  private redirectKeyPresent(lines: string[], frontMatterEnd: number, fileNameRelative: string): boolean {
-    const redirectLine: number = lines
-                                  .slice(0, frontMatterEnd)
-                                  .findIndex( (line) => line.startsWith('redirect_from:'));
-    return redirectLine > -1;
-  }
-
-  private redirectIndex(frontMatterEnd: number, linesCopy: string[]): number {
-    if (frontMatterEnd>=0) {
-      for (var _i = 0; _i < frontMatterEnd; _i++) {
-        if (linesCopy[_i].startsWith('redirect_from:')) {
-          return _i;
-        }
-      }
+  private relativeFileName(): string {
+    const fileName = this.editor.document.fileName;
+    const workspaceFolder = this.documentWorkspaceFolder();
+    let workspaceLen = 0;
+    if (workspaceFolder) {
+      workspaceLen = workspaceFolder.length;
     }
-    return -1;
-  }
-
-  // See https://github.com/nodeca/js-yaml
-  private redirectYaml(frontMatterStr: string, newRedirect: string) {
-    const yaml = require('js-yaml');
-
-    if (frontMatterStr.length>=0) {
-      console.log(`Jekyll front matter is:\n${frontMatterStr}`);
-      let frontMatterYaml = yaml.load(frontMatterStr);
-      let redirectFrom = frontMatterYaml.redirect_from;
-      if (redirectFrom) {
-        if (! redirectFrom.contains(newRedirect)) {
-          return '';
-        } else {
-          redirectFrom.insert(newRedirect);
-        }
-      } else {
-        frontMatterYaml.insert('redirect_from', newRedirect);
-      }
-      const result = yaml.dump(frontMatterYaml, { lineWidth: -1, noCompatMode: true, sortKeys: true });
-      return result;
-  }
-    return yaml.new;
+    return fileName.substring(workspaceLen);
   }
 }
