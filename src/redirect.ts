@@ -10,31 +10,33 @@ export default class Redirect {
     this.editor = editor;
   }
 
-  public insertRedirect(lines: string[], fileNameRelative: string) {
+  public insertRedirect(lines: string[], fileNameRelative: string): void {
     let linesCopy = Array.from(lines);
     linesCopy.shift();
+    const newText = `  - ${fileNameRelative}`;
     const frontMatterEnd: number = linesCopy.findIndex(x => x.startsWith('---'));
-    let lastRedirectIndex: number = this.scanForRedirect(frontMatterEnd, linesCopy);
-    let newText = "";
-    if (lastRedirectIndex < 0) {
-      lastRedirectIndex = 1;
-      newText = `redirect_from:\n  - ${fileNameRelative}`;
+    const nextLineNumber: number = this.nextRedirectIndex(frontMatterEnd, linesCopy);
+    if (this.redirectAlreadyPresent(linesCopy, frontMatterEnd, fileNameRelative)) {
+      vscode.window.showInformationMessage(
+        `${fileNameRelative} is already present in the list of redirect_from items`,
+        { modal: true }
+      );
     } else {
-      lastRedirectIndex += 1;
-      newText = `  - ${fileNameRelative}`;
+      const position = new vscode.Position(nextLineNumber, 0);
+      this.editor.edit(editBuilder => {
+        editBuilder.insert(position, `${newText}\n`);
+      });
     }
-    this.editor.edit(editBuilder => {
-      const position = new vscode.Position(lastRedirectIndex, 0);
-      editBuilder.insert(position, `${newText}\n`);
-    });
   }
 
-  public loadJekyllConfig() {
+
+  public loadJekyllConfig(): void {
     const yaml = require('js-yaml');
     const fs   = require('fs');
 
     try {
-      const doc = yaml.load(fs.readFileSync(this.documentWorkspaceFolder() + '/_config.yml', 'utf8'));
+      const fqConfigName = this.documentWorkspaceFolder() + '/_config.yml';
+      const doc = yaml.safeLoad(fs.readFileSync(fqConfigName, 'utf8'));
       const collectionsDir: string = doc.collections_dir;
       console.log(doc);
     } catch (e) {
@@ -43,20 +45,25 @@ export default class Redirect {
     }
   }
 
-  public process() {
-    const config = this.loadJekyllConfig();
+  public process(): void {
+    // const config = this.loadJekyllConfig();
     const fileNameRelative = this.relativeFileName();
     const text = this.editor.document.getText();
     console.log(`Examining ${fileNameRelative}`);
     let lines = text.split("\n");
     if (lines.length>1 && lines[0].startsWith("---")) {
+      this.logFrontMatter(lines);
       this.insertRedirect(lines, fileNameRelative);
     } else {
-      console.log("No front matter was found in the currently edited file.");
+      vscode.window.showErrorMessage(
+        "No Jekyll front matter was found in the currently edited file, so no redirect was generated" +
+        'See https://jekyllrb.com/docs/front-matter/',
+        { modal: true }
+      );
     }
   }
 
-  public relativeFileName() {
+  public relativeFileName(): string {
     const fileName = this.editor.document.fileName;
     const workspaceFolder = this.documentWorkspaceFolder();
     let workspaceLen = 0;
@@ -74,21 +81,89 @@ export default class Redirect {
       .filter((fsPath) => fileName?.startsWith(fsPath))[0];
   }
 
-  private scanForRedirect(frontMatterEnd: number, linesCopy: string[]) {
+  // See https://github.com/nodeca/js-yaml
+  private redirectYaml(frontMatterStr: string, newRedirect: string) {
+    const yaml = require('js-yaml');
+
+    if (frontMatterStr.length>=0) {
+      console.log(`Jekyll front matter is:\n${frontMatterStr}`);
+      let frontMatterYaml = yaml.load(frontMatterStr);
+      let redirectFrom = frontMatterYaml.redirect_from;
+      if (redirectFrom) {
+        if (! redirectFrom.contains(newRedirect)) {
+          return '';
+        } else {
+          redirectFrom.insert(newRedirect);
+        }
+      } else {
+        frontMatterYaml.insert('redirect_from', newRedirect);
+      }
+      const result = yaml.dump(frontMatterYaml, { lineWidth: -1, noCompatMode: true, sortKeys: true });
+      return result;
+  }
+    return yaml.new;
+  }
+
+  private logFrontMatter(lines: string[]) {
+    const linesCopy = Array.from(lines);
+    linesCopy.shift();
+    const frontMatterEnd: number = linesCopy.findIndex(x => x.startsWith('---'));
+    if (frontMatterEnd>=0) {
+      console.log(`Jekyll front matter is:`);
+      for (var _i = 0; _i < frontMatterEnd; _i++) {
+        console.log(`${(_i+1).toString().padStart(3)}:  ${linesCopy[_i]}`);
+      }
+    }
+  }
+
+  private nextRedirectIndex(frontMatterEnd: number, lines: string[]): number {
     let lastRedirectIndex: number = -1;
     let redirectEntryIndex: number = -1;
+    let processingRedirects: boolean = false;
     if (frontMatterEnd>=0) {
-      console.log("Jekyll front matter is:");
       for (var _i = 0; _i < frontMatterEnd; _i++) {
-        // var num = linesCopy[_i];
-        console.log(`  ${linesCopy[_i]}`);
-        if (linesCopy[_i].startsWith('redirect_from:')) {
+        if (lines[_i].startsWith('redirect_from:')) {
           redirectEntryIndex = lastRedirectIndex = _i;
-        } else if (redirectEntryIndex>=0 && linesCopy[_i].startsWith('  - ')) {
-          lastRedirectIndex = _i;
+          processingRedirects = true;
+        } else if (processingRedirects) {
+          if (lines[_i].startsWith('  - ')) {
+            lastRedirectIndex = _i;
+          } else {
+            processingRedirects = false;
+          }
         }
       }
     }
-    return lastRedirectIndex;
+    return lastRedirectIndex + 2;
+  }
+
+  private redirectAlreadyPresent(lines: string[], frontMatterEnd: number, fileNameRelative: string): boolean {
+    const redirectLine: number = lines
+                                  .slice(0, frontMatterEnd)
+                                  .findIndex( (line) => line.startsWith('redirect_from:'));
+    if (redirectLine>=0) {
+      for (var _i = redirectLine+1; _i < frontMatterEnd; _i++) {
+        const line = lines[_i];
+        if (!line.startsWith("  - ")) {
+          return false;
+        }
+        const fileName = line.replace('  - ', '');
+        if (fileName === fileNameRelative) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private redirectIndex(frontMatterEnd: number, linesCopy: string[]): number {
+    if (frontMatterEnd>=0) {
+      for (var _i = 0; _i < frontMatterEnd; _i++) {
+        if (linesCopy[_i].startsWith('redirect_from:')) {
+          return _i;
+        }
+      }
+    }
+    return -1;
   }
 }

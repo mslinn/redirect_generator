@@ -15,12 +15,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// This code is executed every time the command is executed
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-			vscode.window.showInformationMessage(
-				"redirect_generator is adding an HTTP redirect into this page's Jekyll front matter."
+			console.log(
+				"redirect_generator will attempt to add an HTTP redirect into this page's Jekyll front matter."
 			);
 			new Redirect(editor).process();
 		} else {
-			vscode.window.showInformationMessage(
+			vscode.window.showWarningMessage(
 				"Please select an editor window containing a Jekyll website's HTML" +
 				" page so redirect_generator can insert an HTTP redirect into the Jekyll front matter."
 			);
