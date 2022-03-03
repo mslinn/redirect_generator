@@ -20,6 +20,7 @@ export default class Redirect {
       lastRedirectIndex = 1;
       newText = `redirect_from:\n  - ${fileNameRelative}`;
     } else {
+      lastRedirectIndex += 1;
       newText = `  - ${fileNameRelative}`;
     }
     this.editor.edit(editBuilder => {
