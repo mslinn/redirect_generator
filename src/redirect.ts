@@ -1,12 +1,15 @@
 import * as vscode from 'vscode';
 import { FrontMatter } from './frontMatter';
 import { JekyllConfig } from './jekyllConfig';
+import { SiteMap } from './siteMap';
 
 export default class Redirect extends FrontMatter {
   private jekyllConfig: JekyllConfig;
+  private siteMap: SiteMap;
 
   constructor(editor: vscode.TextEditor) {
     super(editor);
+    this.siteMap = new SiteMap(this.documentWorkspaceFolder());
     this.jekyllConfig = new JekyllConfig(this.documentWorkspaceFolder());
   }
 
