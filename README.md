@@ -1,72 +1,77 @@
 # redirect-generator
 
-Visual Studio Code Extension that injects the URL of a redirect page into 
-[Jekyll](http://jekyllrb.com/) [front matter](https://jekyllrb.com/docs/front-matter/).
+Visual Studio Code Extension that makes it easier to move HTML pages in Jekyll websites, without breaking external links.
 
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Creates HTML page stubs that contain [HTTP Meta Refresh redirects](https://www.w3.org/TR/WCAG20-TECHS/H76.html)
+for the HTML file in the currently active editor.
+The [`redirect_from`](https://github.com/jekyll/jekyll-redirect-from) documentation describes how the redirects work.
 
-For example if there is an image subfolder under your extension project workspace:
+Each time this plugin is invoked from a Visual Studio Code edit pane,
+it writes a new path under the `redirect_from:` key, which it creates if necessary.
+The newest paths are created at the bottom.
 
-\!\[feature X\]\(images/feature-x.png\)
+This plugin injects the URL of a redirect page into
+[Jekyll](http://jekyllrb.com/) [front matter](https://jekyllrb.com/docs/front-matter/).
+Here is an example of front matter, showing the paths of two redirects:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+**`/about/index.html`**
+```
+---
+layout: default
+title: Restless Page
+redirect_from:
+  - /old/path1/index.html
+  - /old/path2/blah.html
+---
+```
+
+Given the above front matter in a page at `/about/index.html`, 2 stub HTML pages would be created,
+containing identical contents,
+in addition to the [normally generated page](https://jekyllrb.com/docs/structure/) at `_site/about/index.html`:
+
+**`/_site/old/path1/index.html`**
+```html
+<head>
+  <title>Restless Page</title>
+  <meta http-equiv="refresh" content="0;URL='/about/index.html'" />
+</head>
+```
+
+**`/_site/old/path2/blah.html`**
+```html
+<head>
+  <title>Restless Page</title>
+  <meta http-equiv="refresh" content="0;URL='/about/index.html'" />
+</head>
+```
+
 
 ## Requirements
+This plugin is written in TypeScript, which is compatible with Node.js.
+Install TypeScript dependencies like this:
+```shell
+npm install
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+This plugin requires the following Jekyll plugins.
+Read their documentation to install them.
 
-## Extension Settings
+  - [Sitemap Generator](https://github.com/jekyll/jekyll-sitemap)
+  - [`redirect_from`](https://github.com/jekyll/jekyll-redirect-from)
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+None.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
+Initial release.
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
 **Enjoy!**
